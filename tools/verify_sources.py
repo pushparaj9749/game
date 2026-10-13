@@ -9,7 +9,8 @@ verify the things a compiler would catch first:
   3. every Art.x(...) / sound.x(...) call matches a definition by arity
   4. required SurfaceView / Activity hooks are present
   5. balanced braces and parens per Java file
-  6. obviously unused imports
+  6. hex literals that overflow int (the 0xFFRRGGBB ARGB colour trap)
+  7. obviously unused imports
 
 Usage:  python3 tools/verify_sources.py
 Exit code 0 = all good.
@@ -250,7 +251,22 @@ def main():
                 fails.append("%s: unbalanced %s%s (%d vs %d)"
                              % (os.path.basename(f), op, cl, s.count(op), s.count(cl)))
 
-    # 6. unused imports
+    # 6. int literals that overflow Java's 32-bit signed range.
+    #    This is the classic ARGB colour bug: 0xFF14331F is 4279513887, which
+    #    javac rejects with "integer number too large" unless written as a long
+    #    (0xFF14331FL). A long constant in range 0x80000000..0xFFFFFFFF still
+    #    narrows implicitly when assigned to an int or passed to setColor(int).
+    INT_MAX = 0x7FFFFFFF
+    for f in java_files:
+        for m in re.finditer(r"\b0[xX]([0-9a-fA-F]+)(?![0-9a-fA-FlL])",
+                             open(f, encoding="utf-8").read()):
+            if int(m.group(1), 16) > INT_MAX:
+                line = open(f, encoding="utf-8").read()[: m.start()].count("\n") + 1
+                fails.append("%s:%d hex literal 0x%s exceeds Integer.MAX_VALUE - "
+                             "needs a trailing L"
+                             % (os.path.basename(f), line, m.group(1)))
+
+    # 7. unused imports
     for f in java_files:
         s = open(f, encoding="utf-8").read()
         body = re.sub(r"^import .*$", "", s, flags=re.M)

@@ -33,26 +33,26 @@ final class Art {
     private static final float[] RADII8 = new float[8];
 
     // ---- Palette ----
-    static final int COL_GRASS_DARK = 0xFF14331F;
-    static final int COL_GRASS = 0xFF1D4A2C;
-    static final int COL_ASPHALT_TOP = 0xFF2C3038;
-    static final int COL_ASPHALT_BOT = 0xFF3A3F49;
-    static final int COL_LINE_WHITE = 0xFFEDEFF2;
-    static final int COL_LINE_YELLOW = 0xFFFFC400;
-    static final int COL_BG = 0xFF10131A;
+    static final int COL_GRASS_DARK = 0xFF14331FL;
+    static final int COL_GRASS = 0xFF1D4A2CL;
+    static final int COL_ASPHALT_TOP = 0xFF2C3038L;
+    static final int COL_ASPHALT_BOT = 0xFF3A3F49L;
+    static final int COL_LINE_WHITE = 0xFFEDEFF2L;
+    static final int COL_LINE_YELLOW = 0xFFFFC400L;
+    static final int COL_BG = 0xFF10131AL;
 
-    static final int COL_RICKSHAW_BODY = 0xFFE8C21A;
-    static final int COL_RICKSHAW_BODY_DARK = 0xFFB99400;
-    static final int COL_RICKSHAW_ROOF = 0xFF1E6B3C;
-    static final int COL_RICKSHAW_ROOF_DARK = 0xFF14502C;
+    static final int COL_RICKSHAW_BODY = 0xFFE8C21AL;
+    static final int COL_RICKSHAW_BODY_DARK = 0xFFB99400L;
+    static final int COL_RICKSHAW_ROOF = 0xFF1E6B3CL;
+    static final int COL_RICKSHAW_ROOF_DARK = 0xFF14502CL;
 
-    static final int COL_TEXT = 0xFFFFFFFF;
-    static final int COL_TEXT_DIM = 0xB3FFFFFF;
-    static final int COL_ACCENT = 0xFF00E5A0;
-    static final int COL_DANGER = 0xFFFF4D5E;
-    static final int COL_NOTE = 0xFF3FA65C;
-    static final int COL_NOTE_DARK = 0xFF2C7A42;
-    static final int COL_SHIELD = 0xFF5AD2FF;
+    static final int COL_TEXT = 0xFFFFFFFFL;
+    static final int COL_TEXT_DIM = 0xB3FFFFFFL;
+    static final int COL_ACCENT = 0xFF00E5A0L;
+    static final int COL_DANGER = 0xFFFF4D5EL;
+    static final int COL_NOTE = 0xFF3FA65CL;
+    static final int COL_NOTE_DARK = 0xFF2C7A42L;
+    static final int COL_SHIELD = 0xFF5AD2FFL;
 
     static void initTypefaces() {
         TEXT.setTypeface(Typeface.create(Typeface.DEFAULT, Typeface.BOLD));
@@ -190,7 +190,7 @@ final class Art {
 
     private static void drawBuilding(Canvas c, float cx, float cy, float w, float h, float seed) {
         int tone = (int) (seed * 3f);
-        int col = tone == 0 ? 0xFF2A3550 : (tone == 1 ? 0xFF3A2C4E : 0xFF25403C);
+        int col = tone == 0 ? 0xFF2A3550L : (tone == 1 ? 0xFF3A2C4EL : 0xFF25403CL);
         rr(c, cx, cy + h * 0.5f, w, h, 10f, col);
         // Roof highlight
         rr(c, cx, cy + h * 0.5f - h * 0.06f, w * 0.86f, h * 0.10f, 6f,
@@ -202,7 +202,7 @@ final class Art {
         for (int r = 0; r < rows; r++) {
             for (int q = 0; q < cols; q++) {
                 float s = hash01((int) (seed * 977f) + r * 31 + q * 7);
-                int win = s > 0.55f ? 0xFFFFD27A : 0xFF1A2233;
+                int win = s > 0.55f ? 0xFFFFD27AL : 0xFF1A2233L;
                 rr(c, x0 + q * gx, y0 + r * gy, gx * 0.56f, gy * 0.50f, 2f, win);
             }
         }
@@ -218,10 +218,10 @@ final class Art {
 
         // Kerb
         FILL.setStyle(Paint.Style.FILL);
-        FILL.setColor(0xFF5C616B);
+        FILL.setColor(0xFF5C616BL);
         c.drawRect(roadL - 14f, 0, roadL, designH, FILL);
         c.drawRect(roadR, 0, roadR + 14f, designH, FILL);
-        FILL.setColor(0xFF8A8F99);
+        FILL.setColor(0xFF8A8F99L);
         c.drawRect(roadL - 14f, 0, roadL - 8f, designH, FILL);
         c.drawRect(roadR + 8f, 0, roadR + 14f, designH, FILL);
 
@@ -289,7 +289,7 @@ final class Art {
         c.drawOval(oval(-w * 0.02f, h * 0.46f, w * 1.06f, h * 0.20f), FILL);
 
         // Wheels
-        int wheelCol = 0xFF15171C;
+        int wheelCol = 0xFF15171CL;
         rr(c, -w * 0.46f, h * 0.30f, w * 0.15f, h * 0.20f, 6f, wheelCol);
         rr(c, w * 0.46f, h * 0.30f, w * 0.15f, h * 0.20f, 6f, wheelCol);
         rr(c, 0f, -h * 0.44f, w * 0.13f, h * 0.15f, 5f, wheelCol);   // front wheel
@@ -305,7 +305,7 @@ final class Art {
         // Canopy (roof) with scalloped rear edge
         rr(c, 0f, h * 0.16f, w * 0.86f, h * 0.40f, 20f, COL_RICKSHAW_ROOF_DARK);
         rr(c, 0f, h * 0.15f, w * 0.80f, h * 0.36f, 18f, COL_RICKSHAW_ROOF);
-        FILL.setColor(0xFF0E3D21);
+        FILL.setColor(0xFF0E3D21L);
         float sc = w * 0.80f / 7f;
         for (int i = 0; i < 7; i++) {
             float sx = -w * 0.40f + sc * (i + 0.5f);
@@ -315,33 +315,33 @@ final class Art {
         rr(c, 0f, h * 0.15f, w * 0.10f, h * 0.36f, 6f, COL_LINE_YELLOW);
 
         // Windshield
-        rr(c, 0f, -h * 0.06f, w * 0.54f, h * 0.13f, 8f, 0xFF9FD8EA);
-        rr(c, 0f, -h * 0.075f, w * 0.50f, h * 0.05f, 5f, 0xFFD6F1FA);
+        rr(c, 0f, -h * 0.06f, w * 0.54f, h * 0.13f, 8f, 0xFF9FD8EAL);
+        rr(c, 0f, -h * 0.075f, w * 0.50f, h * 0.05f, 5f, 0xFFD6F1FAL);
 
         // Driver
-        circ(c, 0f, -h * 0.24f, w * 0.10f, 0xFF6B4A2F);       // head
-        rr(c, 0f, -h * 0.30f, w * 0.22f, h * 0.055f, 6f, 0xFF2B2B33);  // hair/cap
-        rr(c, 0f, -h * 0.16f, w * 0.34f, h * 0.10f, 8f, 0xFF3D6FB5);   // shoulders
+        circ(c, 0f, -h * 0.24f, w * 0.10f, 0xFF6B4A2FL);       // head
+        rr(c, 0f, -h * 0.30f, w * 0.22f, h * 0.055f, 6f, 0xFF2B2B33L);  // hair/cap
+        rr(c, 0f, -h * 0.16f, w * 0.34f, h * 0.10f, 8f, 0xFF3D6FB5L);   // shoulders
 
         // Headlights + indicators
-        circ(c, -w * 0.24f, -h * 0.36f, w * 0.055f, 0xFFFFF3B0);
-        circ(c, w * 0.24f, -h * 0.36f, w * 0.055f, 0xFFFFF3B0);
-        circ(c, -w * 0.36f, h * 0.40f, w * 0.045f, 0xFFFF4D3D);
-        circ(c, w * 0.36f, h * 0.40f, w * 0.045f, 0xFFFF4D3D);
+        circ(c, -w * 0.24f, -h * 0.36f, w * 0.055f, 0xFFFFF3B0L);
+        circ(c, w * 0.24f, -h * 0.36f, w * 0.055f, 0xFFFFF3B0L);
+        circ(c, -w * 0.36f, h * 0.40f, w * 0.045f, 0xFFFF4D3DL);
+        circ(c, w * 0.36f, h * 0.40f, w * 0.045f, 0xFFFF4D3DL);
 
         // Mirrors
         STROKE.setStyle(Paint.Style.STROKE);
         STROKE.setStrokeWidth(w * 0.022f);
-        STROKE.setColor(0xFF2A2D34);
+        STROKE.setColor(0xFF2A2D34L);
         STROKE.setStrokeCap(Paint.Cap.ROUND);
         c.drawLine(-w * 0.33f, -h * 0.28f, -w * 0.52f, -h * 0.31f, STROKE);
         c.drawLine(w * 0.33f, -h * 0.28f, w * 0.52f, -h * 0.31f, STROKE);
-        circ(c, -w * 0.54f, -h * 0.315f, w * 0.038f, 0xFF9FD8EA);
-        circ(c, w * 0.54f, -h * 0.315f, w * 0.038f, 0xFF9FD8EA);
+        circ(c, -w * 0.54f, -h * 0.315f, w * 0.038f, 0xFF9FD8EAL);
+        circ(c, w * 0.54f, -h * 0.315f, w * 0.038f, 0xFF9FD8EAL);
 
         // Number plate
-        rr(c, 0f, h * 0.44f, w * 0.30f, h * 0.055f, 4f, 0xFFF2F2F2);
-        rr(c, 0f, h * 0.44f, w * 0.26f, h * 0.028f, 2f, 0xFF333333);
+        rr(c, 0f, h * 0.44f, w * 0.30f, h * 0.055f, 4f, 0xFFF2F2F2L);
+        rr(c, 0f, h * 0.44f, w * 0.26f, h * 0.028f, 2f, 0xFF333333L);
 
         c.restore();
 
@@ -375,10 +375,10 @@ final class Art {
         c.drawOval(oval(-w * 0.03f + cx, cy + h * 0.46f, w * 1.05f, h * 0.18f), FILL);
 
         // Wheels
-        rr(c, cx - w * 0.47f, cy - h * 0.24f, w * 0.13f, h * 0.17f, 5f, 0xFF15171C);
-        rr(c, cx + w * 0.47f, cy - h * 0.24f, w * 0.13f, h * 0.17f, 5f, 0xFF15171C);
-        rr(c, cx - w * 0.47f, cy + h * 0.26f, w * 0.13f, h * 0.17f, 5f, 0xFF15171C);
-        rr(c, cx + w * 0.47f, cy + h * 0.26f, w * 0.13f, h * 0.17f, 5f, 0xFF15171C);
+        rr(c, cx - w * 0.47f, cy - h * 0.24f, w * 0.13f, h * 0.17f, 5f, 0xFF15171CL);
+        rr(c, cx + w * 0.47f, cy - h * 0.24f, w * 0.13f, h * 0.17f, 5f, 0xFF15171CL);
+        rr(c, cx - w * 0.47f, cy + h * 0.26f, w * 0.13f, h * 0.17f, 5f, 0xFF15171CL);
+        rr(c, cx + w * 0.47f, cy + h * 0.26f, w * 0.13f, h * 0.17f, 5f, 0xFF15171CL);
 
         // Body
         rr(c, cx, cy, w * 0.92f, h * 0.96f, w * 0.20f, color);
@@ -386,14 +386,14 @@ final class Art {
         // Roof
         rr(c, cx, cy + h * 0.02f, w * 0.74f, h * 0.46f, w * 0.16f, mix(color, Color.BLACK, 0.18f));
         // Rear window
-        rr(c, cx, cy + h * 0.20f, w * 0.60f, h * 0.14f, 6f, 0xFF9FD8EA);
+        rr(c, cx, cy + h * 0.20f, w * 0.60f, h * 0.14f, 6f, 0xFF9FD8EAL);
         // Front windshield
-        rr(c, cx, cy - h * 0.16f, w * 0.62f, h * 0.13f, 6f, 0xFFBFE6F2);
+        rr(c, cx, cy - h * 0.16f, w * 0.62f, h * 0.13f, 6f, 0xFFBFE6F2L);
         // Tail lights
-        rr(c, cx - w * 0.30f, cy + h * 0.42f, w * 0.20f, h * 0.055f, 4f, 0xFFFF3B30);
-        rr(c, cx + w * 0.30f, cy + h * 0.42f, w * 0.20f, h * 0.055f, 4f, 0xFFFF3B30);
+        rr(c, cx - w * 0.30f, cy + h * 0.42f, w * 0.20f, h * 0.055f, 4f, 0xFFFF3B30L);
+        rr(c, cx + w * 0.30f, cy + h * 0.42f, w * 0.20f, h * 0.055f, 4f, 0xFFFF3B30L);
         // Plate
-        rr(c, cx, cy + h * 0.43f, w * 0.20f, h * 0.045f, 3f, 0xFFF0F0F0);
+        rr(c, cx, cy + h * 0.43f, w * 0.20f, h * 0.045f, 3f, 0xFFF0F0F0L);
     }
 
     private static void drawBus(Canvas c, float cx, float cy, float w, float h, int color) {
@@ -401,10 +401,10 @@ final class Art {
         FILL.setColor(0x55000000);
         c.drawOval(oval(cx - w * 0.03f, cy + h * 0.47f, w * 1.04f, h * 0.14f), FILL);
 
-        rr(c, cx - w * 0.48f, cy - h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171C);
-        rr(c, cx + w * 0.48f, cy - h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171C);
-        rr(c, cx - w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171C);
-        rr(c, cx + w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171C);
+        rr(c, cx - w * 0.48f, cy - h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171CL);
+        rr(c, cx + w * 0.48f, cy - h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171CL);
+        rr(c, cx - w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171CL);
+        rr(c, cx + w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.13f, 5f, 0xFF15171CL);
 
         rr(c, cx, cy, w * 0.94f, h * 0.98f, w * 0.14f, color);
         rr(c, cx, cy, w * 0.86f, h * 0.92f, w * 0.11f, mix(color, Color.WHITE, 0.10f));
@@ -414,15 +414,15 @@ final class Art {
         int rows = 6;
         for (int i = 0; i < rows; i++) {
             float wy = cy - h * 0.36f + (h * 0.72f / (rows - 1)) * i;
-            rr(c, cx - w * 0.28f, wy, w * 0.20f, h * 0.075f, 4f, 0xFFA9DCEF);
-            rr(c, cx + w * 0.28f, wy, w * 0.20f, h * 0.075f, 4f, 0xFFA9DCEF);
+            rr(c, cx - w * 0.28f, wy, w * 0.20f, h * 0.075f, 4f, 0xFFA9DCEFL);
+            rr(c, cx + w * 0.28f, wy, w * 0.20f, h * 0.075f, 4f, 0xFFA9DCEFL);
         }
         // Rear window + lights
-        rr(c, cx, cy - h * 0.42f, w * 0.62f, h * 0.075f, 5f, 0xFFC7E9F6);
-        rr(c, cx - w * 0.34f, cy + h * 0.44f, w * 0.16f, h * 0.05f, 3f, 0xFFFF3B30);
-        rr(c, cx + w * 0.34f, cy + h * 0.44f, w * 0.16f, h * 0.05f, 3f, 0xFFFF3B30);
+        rr(c, cx, cy - h * 0.42f, w * 0.62f, h * 0.075f, 5f, 0xFFC7E9F6L);
+        rr(c, cx - w * 0.34f, cy + h * 0.44f, w * 0.16f, h * 0.05f, 3f, 0xFFFF3B30L);
+        rr(c, cx + w * 0.34f, cy + h * 0.44f, w * 0.16f, h * 0.05f, 3f, 0xFFFF3B30L);
         // Destination board
-        rr(c, cx, cy + h * 0.36f, w * 0.44f, h * 0.07f, 4f, 0xFF1B1B22);
+        rr(c, cx, cy + h * 0.36f, w * 0.44f, h * 0.07f, 4f, 0xFF1B1B22L);
     }
 
     private static void drawTruck(Canvas c, float cx, float cy, float w, float h, int color) {
@@ -432,23 +432,23 @@ final class Art {
 
         // Cab
         rr(c, cx, cy - h * 0.34f, w * 0.80f, h * 0.26f, 12f, color);
-        rr(c, cx, cy - h * 0.36f, w * 0.62f, h * 0.10f, 6f, 0xFFA9DCEF);
+        rr(c, cx, cy - h * 0.36f, w * 0.62f, h * 0.10f, 6f, 0xFFA9DCEFL);
         // Cargo box
         rr(c, cx, cy + h * 0.10f, w * 0.94f, h * 0.72f, 10f, mix(color, Color.BLACK, 0.25f));
-        rr(c, cx, cy + h * 0.10f, w * 0.86f, h * 0.66f, 8f, 0xFFD8D2C4);
+        rr(c, cx, cy + h * 0.10f, w * 0.86f, h * 0.66f, 8f, 0xFFD8D2C4L);
         // Tarpaulin ribs
-        FILL.setColor(0xFFB6AE9C);
+        FILL.setColor(0xFFB6AE9CL);
         for (int i = 0; i < 4; i++) {
             float ry = cy - h * 0.16f + (h * 0.56f / 3f) * i;
             c.drawRect(cx - w * 0.40f, ry, cx + w * 0.40f, ry + h * 0.025f, FILL);
         }
         // "HORN OK PLEASE" stripe
-        rr(c, cx, cy + h * 0.38f, w * 0.80f, h * 0.09f, 4f, 0xFFE23B3B);
+        rr(c, cx, cy + h * 0.38f, w * 0.80f, h * 0.09f, 4f, 0xFFE23B3BL);
         // Wheels + lights
-        rr(c, cx - w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.16f, 5f, 0xFF15171C);
-        rr(c, cx + w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.16f, 5f, 0xFF15171C);
-        rr(c, cx - w * 0.32f, cy + h * 0.45f, w * 0.14f, h * 0.05f, 3f, 0xFFFF3B30);
-        rr(c, cx + w * 0.32f, cy + h * 0.45f, w * 0.14f, h * 0.05f, 3f, 0xFFFF3B30);
+        rr(c, cx - w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.16f, 5f, 0xFF15171CL);
+        rr(c, cx + w * 0.48f, cy + h * 0.30f, w * 0.14f, h * 0.16f, 5f, 0xFF15171CL);
+        rr(c, cx - w * 0.32f, cy + h * 0.45f, w * 0.14f, h * 0.05f, 3f, 0xFFFF3B30L);
+        rr(c, cx + w * 0.32f, cy + h * 0.45f, w * 0.14f, h * 0.05f, 3f, 0xFFFF3B30L);
     }
 
     private static void drawCow(Canvas c, float cx, float cy, float w, float h, float time) {
@@ -457,34 +457,34 @@ final class Art {
         c.drawOval(oval(cx - w * 0.04f, cy + h * 0.44f, w * 1.05f, h * 0.16f), FILL);
 
         // Legs
-        rr(c, cx - w * 0.28f, cy + h * 0.28f, w * 0.12f, h * 0.28f, 5f, 0xFFD9CBB4);
-        rr(c, cx + w * 0.28f, cy + h * 0.28f, w * 0.12f, h * 0.28f, 5f, 0xFFD9CBB4);
-        rr(c, cx - w * 0.28f, cy - h * 0.22f, w * 0.12f, h * 0.26f, 5f, 0xFFD9CBB4);
-        rr(c, cx + w * 0.28f, cy - h * 0.22f, w * 0.12f, h * 0.26f, 5f, 0xFFD9CBB4);
+        rr(c, cx - w * 0.28f, cy + h * 0.28f, w * 0.12f, h * 0.28f, 5f, 0xFFD9CBB4L);
+        rr(c, cx + w * 0.28f, cy + h * 0.28f, w * 0.12f, h * 0.28f, 5f, 0xFFD9CBB4L);
+        rr(c, cx - w * 0.28f, cy - h * 0.22f, w * 0.12f, h * 0.26f, 5f, 0xFFD9CBB4L);
+        rr(c, cx + w * 0.28f, cy - h * 0.22f, w * 0.12f, h * 0.26f, 5f, 0xFFD9CBB4L);
 
         // Body
-        rr(c, cx, cy, w * 0.72f, h * 0.86f, w * 0.30f, 0xFFF2E7D5);
+        rr(c, cx, cy, w * 0.72f, h * 0.86f, w * 0.30f, 0xFFF2E7D5L);
         // Patches
-        circ(c, cx - w * 0.12f, cy + h * 0.10f, w * 0.13f, 0xFF6B5544);
-        circ(c, cx + w * 0.14f, cy - h * 0.18f, w * 0.10f, 0xFF6B5544);
+        circ(c, cx - w * 0.12f, cy + h * 0.10f, w * 0.13f, 0xFF6B5544L);
+        circ(c, cx + w * 0.14f, cy - h * 0.18f, w * 0.10f, 0xFF6B5544L);
         // Head
-        rr(c, cx, cy - h * 0.36f, w * 0.40f, h * 0.26f, 12f, 0xFFEAD9C0);
-        rr(c, cx, cy - h * 0.30f, w * 0.26f, h * 0.10f, 8f, 0xFFD9A9A0);   // muzzle
+        rr(c, cx, cy - h * 0.36f, w * 0.40f, h * 0.26f, 12f, 0xFFEAD9C0L);
+        rr(c, cx, cy - h * 0.30f, w * 0.26f, h * 0.10f, 8f, 0xFFD9A9A0L);   // muzzle
         // Horns
         STROKE.setStyle(Paint.Style.STROKE);
         STROKE.setStrokeCap(Paint.Cap.ROUND);
         STROKE.setStrokeWidth(w * 0.055f);
-        STROKE.setColor(0xFFC9BBA3);
+        STROKE.setColor(0xFFC9BBA3L);
         c.drawLine(cx - w * 0.16f, cy - h * 0.44f, cx - w * 0.26f, cy - h * 0.52f, STROKE);
         c.drawLine(cx + w * 0.16f, cy - h * 0.44f, cx + w * 0.26f, cy - h * 0.52f, STROKE);
         // Ears + eyes
-        circ(c, cx - w * 0.20f, cy - h * 0.37f, w * 0.055f, 0xFFE0CDB2);
-        circ(c, cx + w * 0.20f, cy - h * 0.37f, w * 0.055f, 0xFFE0CDB2);
-        circ(c, cx - w * 0.08f, cy - h * 0.40f, w * 0.028f, 0xFF22222A);
-        circ(c, cx + w * 0.08f, cy - h * 0.40f, w * 0.028f, 0xFF22222A);
+        circ(c, cx - w * 0.20f, cy - h * 0.37f, w * 0.055f, 0xFFE0CDB2L);
+        circ(c, cx + w * 0.20f, cy - h * 0.37f, w * 0.055f, 0xFFE0CDB2L);
+        circ(c, cx - w * 0.08f, cy - h * 0.40f, w * 0.028f, 0xFF22222AL);
+        circ(c, cx + w * 0.08f, cy - h * 0.40f, w * 0.028f, 0xFF22222AL);
         // Tail swish
         float sw = (float) Math.sin(time * 5.0) * w * 0.10f;
-        STROKE.setColor(0xFFE3D6C1);
+        STROKE.setColor(0xFFE3D6C1L);
         STROKE.setStrokeWidth(w * 0.045f);
         c.drawLine(cx, cy + h * 0.42f, cx + sw, cy + h * 0.60f, STROKE);
     }
@@ -492,7 +492,7 @@ final class Art {
     private static void drawPothole(Canvas c, float cx, float cy, float w, float h) {
         FILL.setStyle(Paint.Style.FILL);
         // Cracked rim
-        FILL.setColor(0xFF22252B);
+        FILL.setColor(0xFF22252BL);
         P.reset();
         int pts = 11;
         for (int i = 0; i <= pts; i++) {
@@ -505,7 +505,7 @@ final class Art {
         P.close();
         c.drawPath(P, FILL);
         // Water inside
-        FILL.setColor(0xFF12141A);
+        FILL.setColor(0xFF12141AL);
         c.drawOval(oval(cx, cy, w * 0.72f, h * 0.66f), FILL);
         FILL.setColor(0x335AD2FF);
         c.drawOval(oval(cx - w * 0.10f, cy - h * 0.08f, w * 0.30f, h * 0.18f), FILL);
@@ -521,8 +521,8 @@ final class Art {
         circ(c, cx, cy, w * 0.72f, 0x223FA65C);
         rr(c, cx, cy, w, h, 6f, COL_NOTE_DARK);
         rr(c, cx, cy - h * 0.02f, w * 0.94f, h * 0.90f, 5f, COL_NOTE);
-        rrStroke(c, cx, cy - h * 0.02f, w * 0.80f, h * 0.76f, 4f, 0xFFEAF7EE, 2.5f);
-        circ(c, cx, cy - h * 0.02f, h * 0.26f, 0xFFEAF7EE);
+        rrStroke(c, cx, cy - h * 0.02f, w * 0.80f, h * 0.76f, 4f, 0xFFEAF7EEL, 2.5f);
+        circ(c, cx, cy - h * 0.02f, h * 0.26f, 0xFFEAF7EEL);
         TEXT.setTextAlign(Paint.Align.CENTER);
         TEXT.setColor(COL_NOTE_DARK);
         TEXT.setTextSize(h * 0.42f);
@@ -540,21 +540,21 @@ final class Art {
         cy += bob;
         circ(c, cx, cy, r * 1.45f, 0x225AD2FF);
         // Saucer
-        circ(c, cx, cy, r, 0xFFF2F4F7);
-        circ(c, cx, cy, r * 0.92f, 0xFFDDE2E8);
+        circ(c, cx, cy, r, 0xFFF2F4F7L);
+        circ(c, cx, cy, r * 0.92f, 0xFFDDE2E8L);
         // Cup
-        circ(c, cx, cy, r * 0.66f, 0xFFFFFFFF);
-        circStroke(c, cx, cy, r * 0.66f, 0xFFB9C2CC, r * 0.07f);
+        circ(c, cx, cy, r * 0.66f, 0xFFFFFFFFL);
+        circStroke(c, cx, cy, r * 0.66f, 0xFFB9C2CCL, r * 0.07f);
         // Tea
-        circ(c, cx, cy, r * 0.52f, 0xFFC97B3C);
-        circ(c, cx - r * 0.14f, cy - r * 0.14f, r * 0.17f, 0xFFE0A066);
+        circ(c, cx, cy, r * 0.52f, 0xFFC97B3CL);
+        circ(c, cx - r * 0.14f, cy - r * 0.14f, r * 0.17f, 0xFFE0A066L);
         // Handle
-        circStroke(c, cx + r * 0.80f, cy, r * 0.24f, 0xFFFFFFFF, r * 0.11f);
+        circStroke(c, cx + r * 0.80f, cy, r * 0.24f, 0xFFFFFFFFL, r * 0.11f);
         // Steam
         STROKE.setStyle(Paint.Style.STROKE);
         STROKE.setStrokeCap(Paint.Cap.ROUND);
         STROKE.setStrokeWidth(r * 0.10f);
-        STROKE.setColor(0x99FFFFFF);
+        STROKE.setColor(0x99FFFFFFL);
         for (int i = 0; i < 2; i++) {
             float ph = time * 2.6f + i * 1.7f;
             float sx = cx - r * 0.22f + i * r * 0.44f;
@@ -565,7 +565,7 @@ final class Art {
             c.drawPath(P, STROKE);
         }
         if (shieldActive) {
-            circStroke(c, cx, cy, r * 1.55f, 0xAA5AD2FF, r * 0.09f);
+            circStroke(c, cx, cy, r * 1.55f, 0xAA5AD2FFL, r * 0.09f);
         }
     }
 
