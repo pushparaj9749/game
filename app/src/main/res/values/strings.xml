@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Rickshaw Rush</string>
+    <!-- Kept in resources so the source stays pure ASCII. -->
+    <string name="rupee">\u20B9</string>
+</resources>

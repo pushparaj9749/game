@@ -1,0 +1,70 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!--
+      Launcher icon foreground: a front-on auto-rickshaw, drawn by hand as
+      vector paths so it stays crisp at every density. Artwork is kept inside
+      the centre 72dp safe zone that adaptive icons require.
+    -->
+
+    <!-- road shadow -->
+    <path
+        android:fillColor="#0D0F14"
+        android:pathData="M28,84 h52 a4,4 0 0 1 0,8 h-52 a4,4 0 0 1 0,-8 z" />
+
+    <!-- wheels -->
+    <path
+        android:fillColor="#15171C"
+        android:pathData="M30,72 h8 v14 h-8 z" />
+    <path
+        android:fillColor="#15171C"
+        android:pathData="M70,72 h8 v14 h-8 z" />
+
+    <!-- body -->
+    <path
+        android:fillColor="#B99400"
+        android:pathData="M30,44 h48 a6,6 0 0 1 6,6 v28 a4,4 0 0 1 -4,4 h-52 a4,4 0 0 1 -4,-4 v-28 a6,6 0 0 1 6,-6 z" />
+    <path
+        android:fillColor="#E8C21A"
+        android:pathData="M32,46 h44 a5,5 0 0 1 5,5 v24 h-54 v-24 a5,5 0 0 1 5,-5 z" />
+
+    <!-- canopy / roof -->
+    <path
+        android:fillColor="#14502C"
+        android:pathData="M28,30 h52 a8,8 0 0 1 8,8 v8 h-68 v-8 a8,8 0 0 1 8,-8 z" />
+    <path
+        android:fillColor="#1E6B3C"
+        android:pathData="M30,32 h48 a7,7 0 0 1 7,7 v5 h-62 v-5 a7,7 0 0 1 7,-7 z" />
+
+    <!-- windshield -->
+    <path
+        android:fillColor="#9FD8EA"
+        android:pathData="M38,48 h32 a3,3 0 0 1 3,3 v9 a3,3 0 0 1 -3,3 h-32 a3,3 0 0 1 -3,-3 v-9 a3,3 0 0 1 3,-3 z" />
+    <path
+        android:fillColor="#D6F1FA"
+        android:pathData="M38,49 h32 a2,2 0 0 1 2,2 v3 h-36 v-3 a2,2 0 0 1 2,-2 z" />
+
+    <!-- headlights -->
+    <path
+        android:fillColor="#FFF3B0"
+        android:pathData="M36,66 m-4,0 a4,4 0 1 0 8,0 a4,4 0 1 0 -8,0" />
+    <path
+        android:fillColor="#FFF3B0"
+        android:pathData="M72,66 m-4,0 a4,4 0 1 0 8,0 a4,4 0 1 0 -8,0" />
+
+    <!-- grille -->
+    <path
+        android:fillColor="#3A3F49"
+        android:pathData="M46,66 h16 v7 h-16 z" />
+
+    <!-- mirrors -->
+    <path
+        android:fillColor="#2A2D34"
+        android:pathData="M24,50 h6 v4 h-6 z" />
+    <path
+        android:fillColor="#2A2D34"
+        android:pathData="M78,50 h6 v4 h-6 z" />
+</vector>

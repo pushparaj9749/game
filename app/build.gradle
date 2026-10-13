@@ -1,0 +1,78 @@
+plugins {
+    id 'com.android.application'
+}
+
+// ---------------------------------------------------------------------------
+// Optional release signing.
+//
+// By default `assembleRelease` produces an UNSIGNED apk (app-release-unsigned.apk)
+// which you sign yourself with apksigner / jarsigner - exactly as you wanted.
+//
+// If you ever want CI to sign for you, add these repository secrets and the
+// release build gets signed automatically (see .github/workflows/build-apk.yml):
+//
+//   KEYSTORE_BASE64     -> `base64 -w0 release.keystore`
+//   KEYSTORE_PASSWORD   -> store password
+//   KEY_ALIAS           -> key alias
+//   KEY_PASSWORD        -> key password
+// ---------------------------------------------------------------------------
+def keystoreB64 = System.getenv('KEYSTORE_BASE64')
+def hasCiSigning = keystoreB64 != null && !keystoreB64.trim().isEmpty()
+
+if (hasCiSigning) {
+    def f = new File(buildDir, 'ci-release.keystore')
+    f.bytes = keystoreB64.trim().decodeBase64()
+    signingConfigs {
+        ciRelease {
+            storeFile f
+            storePassword System.getenv('KEYSTORE_PASSWORD')
+            keyAlias System.getenv('KEY_ALIAS')
+            keyPassword System.getenv('KEY_PASSWORD')
+        }
+    }
+}
+
+android {
+    namespace = APP_ID
+    compileSdk 36
+
+    defaultConfig {
+        applicationId APP_ID
+        minSdk 24          // ~98% of active devices
+        targetSdk 36
+        versionCode Integer.parseInt(VERSION_CODE.toString())
+        versionName VERSION_NAME.toString()
+    }
+
+    buildTypes {
+        debug {
+            applicationIdSuffix '.debug'
+            versionNameSuffix '-debug'
+            // Debug builds are auto-signed with the debug key -> installable
+            // straight away for testing on your phone.
+        }
+        release {
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (hasCiSigning) {
+                signingConfig signingConfigs.ciRelease
+            }
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    lint {
+        abortOnError false
+    }
+}
+
+// No dependencies at all on purpose:
+// the whole game is drawn with android.graphics.Canvas on a SurfaceView,
+// so there is nothing for Gradle to download beyond the Android framework.
+dependencies {
+}

@@ -1,0 +1,33 @@
+# ---- Gradle / Android build output ----
+.gradle/
+build/
+app/build/
+captures/
+*.apk.idsig
+out/
+
+# ---- Local signing material: NEVER commit these ----
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+ci-release.keystore
+
+# ---- IDE ----
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+.settings/
+.project
+.classpath
+local.properties
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Python tooling (tools/*.py) ----
+__pycache__/
+*.pyc
