@@ -9,8 +9,10 @@ verify the things a compiler would catch first:
   3. every Art.x(...) / sound.x(...) call matches a definition by arity
   4. required SurfaceView / Activity hooks are present
   5. balanced braces and parens per Java file
-  6. numeric literals that overflow int (0xFFRRGGBB colours, big mix constants)
-  7. obviously unused imports
+  6. numeric literals that overflow int - both javac errors: missing L suffix
+     and missing (int) cast on a long literal
+  7. qualified names used as switch case labels (JLS 14.11)
+  8. obviously unused imports
 
 Usage:  python3 tools/verify_sources.py
 Exit code 0 = all good.
@@ -251,32 +253,66 @@ def main():
                 fails.append("%s: unbalanced %s%s (%d vs %d)"
                              % (os.path.basename(f), op, cl, s.count(op), s.count(cl)))
 
-    # 6. int literals that overflow Java's 32-bit signed range.
-    #    This is the classic ARGB colour bug: 0xFF14331F is 4279513887, which
-    #    javac rejects with "integer number too large" unless written as a long
-    #    (0xFF14331FL). A long constant in range 0x80000000..0xFFFFFFFF still
-    #    narrows implicitly when assigned to an int or passed to setColor(int).
+    # 6. Numeric literals that overflow Java's 32-bit signed int range.
+    #
+    #    Two distinct javac errors hide here, and both bit us:
+    #      a) `int c = 0xFF14331F;`  -> "integer number too large".
+    #         Any hex/decimal constant above 0x7FFFFFFF needs an `L` suffix to
+    #         even be representable.
+    #      b) `int c = 0xFF14331FL;` -> "incompatible types: possible lossy
+    #         conversion from long to int". JLS narrowing of a *constant* only
+    #         applies to int literals, never to long ones, so an explicit
+    #         `(int)` cast is required.
+    #
+    #    Therefore every over-range literal must appear as `(int) 0xFF14331FL`.
+    #    Skip the check where a long really is wanted: `long x = ...L`,
+    #    `... & 0xFFFFFFFFL`, `1103515245L`-style mixing constants.
     INT_MAX = 0x7FFFFFFF
-    HEX_RE = re.compile(r"\b0[xX]([0-9a-fA-F]+)(?![0-9a-fA-FlL])")
-    # Decimal int literal: no type suffix (l/L/f/F/d/D), not part of a float,
-    # not an identifier, not a hex literal. Underscore separators allowed.
-    DEC_RE = re.compile(r"(?<![\w.])(\d[\d_]*)(?![\w.])")
+    LONG_CONTEXT = re.compile(r"(long\s+\w+\s*=|&\s*|\|=|<<|>>>?)\s*$")
     for f in java_files:
         text = open(f, encoding="utf-8").read()
-        for regex, base, label in ((HEX_RE, 16, "hex"), (DEC_RE, 10, "decimal")):
-            for m in regex.finditer(text):
-                digits = m.group(1).replace("_", "")
-                try:
-                    value = int(digits, base)
-                except ValueError:
+        for m in re.finditer(r"\b0[xX]([0-9a-fA-F]+)(?![0-9a-fA-F])(L|l)?", text):
+            digits, suffix = m.group(1), m.group(2)
+            value = int(digits, 16)
+            if value <= INT_MAX:
+                continue
+            line = text[: m.start()].count("\n") + 1
+            prefix = text[max(0, m.start() - 24):m.start()]
+            if LONG_CONTEXT.search(prefix):
+                continue  # genuinely a long expression
+            if not suffix:
+                fails.append("%s:%d 0x%s exceeds Integer.MAX_VALUE - "
+                             "needs `(int) 0x%sL`" % (os.path.basename(f), line,
+                                                      digits, digits))
+            elif not re.search(r"\(\s*int\s*\)\s*$", prefix):
+                fails.append("%s:%d 0x%sL is a long - assigning/passing it as int "
+                             "is a lossy conversion, needs an `(int)` cast"
+                             % (os.path.basename(f), line, digits))
+        # Decimal over-range literals (e.g. the 2246822519 hash constant).
+        for m in re.finditer(r"(?<![\w.])(\d[\d_]*)(?![\w.])", text):
+            digits = m.group(1).replace("_", "")
+            if int(digits) > INT_MAX:
+                line = text[: m.start()].count("\n") + 1
+                prefix = text[max(0, m.start() - 24):m.start()]
+                if LONG_CONTEXT.search(prefix):
                     continue
-                if value > INT_MAX:
-                    line = text[: m.start()].count("\n") + 1
-                    fails.append("%s:%d %s literal %s = %d exceeds Integer.MAX_VALUE "
-                                 "(0x7FFFFFFF) - needs a trailing L"
-                                 % (os.path.basename(f), line, label, m.group(0), value))
+                fails.append("%s:%d decimal literal %s exceeds Integer.MAX_VALUE - "
+                             "needs a trailing L" % (os.path.basename(f), line, digits))
 
-    # 7. unused imports
+    # 7. Qualified names used as switch case labels.
+    #    JLS 14.11 requires a ConstantExpression, which by JLS 15.29 excludes
+    #    qualified names - so `case GameView.OBST_CAR:` fails to compile even
+    #    though the field is a static final int. Mirror it in a local constant.
+    for f in java_files:
+        text = open(f, encoding="utf-8").read()
+        for m in re.finditer(r"^\s*case\s+([A-Za-z_]\w*\s*\.\s*\w+)\s*:", text, re.M):
+            line = text[: m.start()].count("\n") + 1
+            fails.append("%s:%d qualified case label `%s` - JLS 14.11 needs an "
+                         "unqualified constant; copy it into a local "
+                         "static final field"
+                         % (os.path.basename(f), line, m.group(1).replace(" ", "")))
+
+    # 8. unused imports
     for f in java_files:
         s = open(f, encoding="utf-8").read()
         body = re.sub(r"^import .*$", "", s, flags=re.M)

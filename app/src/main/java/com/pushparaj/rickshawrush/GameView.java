@@ -53,11 +53,11 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
     static final int OBST_POTHOLE = 14;
 
     private static final int[] CAR_COLORS = {
-            0xFFE23B3BL, 0xFF3D7BFFL, 0xFFF2F2F2L, 0xFF2FBF71L,
-            0xFFFF8A2BL, 0xFF8E5BE8L, 0xFF22C1D6L, 0xFFD94FA3L
+            (int) 0xFFE23B3BL, (int) 0xFF3D7BFFL, (int) 0xFFF2F2F2L, (int) 0xFF2FBF71L,
+            (int) 0xFFFF8A2BL, (int) 0xFF8E5BE8L, (int) 0xFF22C1D6L, (int) 0xFFD94FA3L
     };
-    private static final int[] BUS_COLORS = {0xFFFFB300L, 0xFFE23B3BL, 0xFF2E7D32L, 0xFF1565C0L};
-    private static final int[] TRUCK_COLORS = {0xFF3B6FD9L, 0xFFD9553BL, 0xFF2E8B57L};
+    private static final int[] BUS_COLORS = {(int) 0xFFFFB300L, (int) 0xFFE23B3BL, (int) 0xFF2E7D32L, (int) 0xFF1565C0L};
+    private static final int[] TRUCK_COLORS = {(int) 0xFF3B6FD9L, (int) 0xFFD9553BL, (int) 0xFF2E8B57L};
 
     // -----------------------------------------------------------------------
     // Pooled objects
@@ -441,7 +441,7 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         invulnTime = Config.HIT_INVULN_SECONDS;
         sound.play(SoundEngine.SND_CRASH);
         shake(0.45f, 26f);
-        burst(playerX, playerY - 30f, 26, 0xFFFF8A2BL, 760f);
+        burst(playerX, playerY - 30f, 26, (int) 0xFFFF8A2BL, 760f);
         vibrate(65);
 
         if (lives <= 0) {
@@ -517,12 +517,12 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (r < 0.07f) {
             type = OBST_COW;
             w = 150f; h = 168f;
-            color = 0xFFF2E7D5L;
+            color = (int) 0xFFF2E7D5L;
             rel = 0.92f;
         } else if (r < 0.16f) {
             type = OBST_POTHOLE;
             w = 132f; h = 96f;
-            color = 0xFF22252BL;
+            color = (int) 0xFF22252BL;
             rel = 1.0f;
         } else if (r < 0.30f) {
             type = OBST_BUS;
@@ -605,7 +605,7 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
             float v = spd * (0.35f + rand() * 0.9f);
             p.set(x, y, (float) Math.cos(a) * v, (float) Math.sin(a) * v - 90f,
                     8f + rand() * 16f, 0.45f + rand() * 0.55f,
-                    Art.mix(color, 0xFFFFFFFFL, rand() * 0.35f), rand() < 0.5f);
+                    Art.mix(color, (int) 0xFFFFFFFFL, rand() * 0.35f), rand() < 0.5f);
             p.spin = (rand() - 0.5f) * 12f;
             particles.add(p);
         }
@@ -936,7 +936,7 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void drawMenu(Canvas c, float dw, float dh) {
-        Art.dim(c, dw, dh, 0xB005070CL);
+        Art.dim(c, dw, dh, (int) 0xB005070CL);
 
         float t = menuTime;
         float cx = dw * 0.5f;
@@ -947,8 +947,8 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
 
         float pulse = 0.5f + 0.5f * (float) Math.sin(t * 3.2);
         Art.roundRect(c, cx, dh * 0.505f, 470f, 132f, 66f,
-                Art.mix(Art.COL_ACCENT, 0xFF00B37EL, 0.35f + 0.3f * pulse));
-        Art.drawText(c, "TAP TO START", cx, dh * 0.505f, 50f, 0xFF06231AL, 1f, false);
+                Art.mix(Art.COL_ACCENT, (int) 0xFF00B37EL, 0.35f + 0.3f * pulse));
+        Art.drawText(c, "TAP TO START", cx, dh * 0.505f, 50f, (int) 0xFF06231AL, 1f, false);
 
         Art.drawText(c, "Tap left / right  -  ya swipe karo", cx, dh * 0.605f, 32f,
                 Art.COL_TEXT_DIM, 1f, false);
@@ -964,12 +964,12 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void drawPauseScreen(Canvas c, float dw, float dh) {
-        Art.dim(c, dw, dh, 0xC4000000L);
+        Art.dim(c, dw, dh, (int) 0xC4000000L);
         float cx = dw * 0.5f;
         Art.drawText(c, "PAUSED", cx, dh * 0.34f, 96f, Art.COL_TEXT, 1f, false);
 
         Art.roundRect(c, cx, dh * 0.50f, 440f, 130f, 65f, Art.COL_ACCENT);
-        Art.drawText(c, "RESUME", cx, dh * 0.50f, 50f, 0xFF06231AL, 1f, false);
+        Art.drawText(c, "RESUME", cx, dh * 0.50f, 50f, (int) 0xFF06231AL, 1f, false);
 
         Art.roundRect(c, cx, dh * 0.605f, 440f, 120f, 60f, 0x22FFFFFF);
         Art.roundRectStroke(c, cx, dh * 0.605f, 440f, 120f, 60f, Art.COL_TEXT_DIM, 3f);
@@ -979,7 +979,7 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     private void drawGameOver(Canvas c, float dw, float dh) {
-        Art.dim(c, dw, dh, 0xD2000000L);
+        Art.dim(c, dw, dh, (int) 0xD2000000L);
         float cx = dw * 0.5f;
 
         Art.drawText(c, "GAME OVER", cx, dh * 0.245f, 92f, Art.COL_DANGER, 1f, true);
@@ -988,8 +988,8 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (best) {
             float pulse = 0.5f + 0.5f * (float) Math.sin(menuTime * 6f);
             Art.roundRect(c, cx, dh * 0.315f, 320f, 62f, 31f,
-                    Art.mix(Art.COL_LINE_YELLOW, 0xFFFF8A2BL, pulse * 0.5f));
-            Art.drawText(c, "NEW BEST!", cx, dh * 0.315f, 34f, 0xFF241703L, 1f, false);
+                    Art.mix(Art.COL_LINE_YELLOW, (int) 0xFFFF8A2BL, pulse * 0.5f));
+            Art.drawText(c, "NEW BEST!", cx, dh * 0.315f, 34f, (int) 0xFF241703L, 1f, false);
         }
 
         Art.drawText(c, "SCORE", cx, dh * 0.40f, 32f, Art.COL_TEXT_DIM, 1f, false);
@@ -1006,8 +1006,8 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         if (gameOverCooldown <= 0f) {
             float pulse = 0.5f + 0.5f * (float) Math.sin(menuTime * 3.4);
             Art.roundRect(c, cx, dh * 0.845f, 470f, 128f, 64f,
-                    Art.mix(Art.COL_ACCENT, 0xFF00B37EL, 0.3f + 0.35f * pulse));
-            Art.drawText(c, "TAP TO PLAY AGAIN", cx, dh * 0.845f, 44f, 0xFF06231AL, 1f, false);
+                    Art.mix(Art.COL_ACCENT, (int) 0xFF00B37EL, 0.3f + 0.35f * pulse));
+            Art.drawText(c, "TAP TO PLAY AGAIN", cx, dh * 0.845f, 44f, (int) 0xFF06231AL, 1f, false);
         }
     }
 }
