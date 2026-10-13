@@ -13,7 +13,9 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # `write` is only needed so the failure-debug step can push the build log to
+  # the orphan ci-logs branch. Nothing is ever pushed to a source branch.
+  contents: write
 
 jobs:
   build:
@@ -124,6 +126,61 @@ jobs:
             echo '```'
             echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # ---------------------------------------------------------------
+      # Failure debugging aid.
+      #
+      # Raw Actions logs are served from a different host than api.github.com
+      # (productionresultssa*.blob.core.windows.net), which is awkward to reach
+      # from restricted environments. This step mirrors build.log onto an
+      # orphan `ci-logs` branch so it can be read back with plain
+      # `gh api repos/OWNER/REPO/contents/build.log?ref=ci-logs`.
+      #
+      # Only runs on failure. Safe to delete once the build is stable.
+      # ---------------------------------------------------------------
+      - name: Publish build log on failure
+        if: failure()
+        run: |
+          set -euo pipefail
+          mkdir -p .cilogs
+          cp -f build.log .cilogs/ 2>/dev/null || echo "(no build.log)" > .cilogs/build.log
+
+          {
+            echo "# Build failure digest"
+            echo ""
+            echo "- run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo "- commit: \`${GITHUB_SHA}\`"
+            echo "- branch: \`${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}\`"
+            echo ""
+            echo "## What went wrong"
+            echo '```'
+            awk '/^FAILURE: Build (failed|completed with an exception)/{f=1} f' build.log 2>/dev/null | head -200
+            echo '```'
+            echo ""
+            echo "## Errors"
+            echo '```'
+            grep -nE "error:|ERROR:|Caused by:|^e: " build.log 2>/dev/null | head -120 || echo "(none)"
+            echo '```'
+            echo ""
+            echo "## Failed tasks"
+            echo '```'
+            grep -E "^> Task .* FAILED" build.log 2>/dev/null | head -40 || echo "(none)"
+            echo '```'
+            echo ""
+            echo "## Gradle version block"
+            echo '```'
+            sed -n '1,40p' build.log
+            echo '```'
+          } > .cilogs/FAIL.md
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git checkout --orphan ci-logs
+          git reset -q
+          git add -f .cilogs
+          git commit -q -m "ci-logs: ${GITHUB_SHA::7} run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+          git push -f origin ci-logs:ci-logs
 
       - name: Upload APKs + build log
         if: always()
