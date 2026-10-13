@@ -78,6 +78,14 @@ jobs:
           ls -la out
           cat out/SHA256SUMS.txt
 
+          # Emit as annotations too: the artifact zip is hosted on a different
+          # domain than api.github.com, so this is the readable-from-anywhere
+          # record of what got built.
+          for f in out/*.apk; do
+            printf '::notice title=APK %s::%s bytes | sha256 %s\n' \
+              "$(basename "$f")" "$(stat -c %s "$f")" "$(sha256sum "$f" | cut -d' ' -f1)"
+          done
+
       # Always runs: this is the only failure detail reachable without the
       # (separately hosted) raw log endpoint, so it goes into the job summary.
       - name: Report
