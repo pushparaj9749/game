@@ -44,13 +44,29 @@ Every push to any branch builds both variants. Open the repo's **Actions** tab �
 latest *Build APK* run → **Artifacts** at the bottom, and download
 `RickshawRush-v<version>-<sha>.zip`.
 
+Or straight from the CLI:
+
+```bash
+gh run list --workflow build-apk.yml --limit 1          # find the run
+gh run download <run-id> -n <artifact-name> -D apks/    # unzip into apks/
+```
+
 Inside the zip:
 
-| File | What it is |
-| --- | --- |
-| `RickshawRush-debug.apk` | Signed with the auto-generated **debug** key. Install directly: `adb install RickshawRush-debug.apk`. Package id gets a `.debug` suffix, so it can live next to the release build. |
-| `RickshawRush-release-UNSIGNED.apk` | Optimised release build, **unsigned** — sign it yourself (see below). |
-| `SHA256SUMS.txt` | Checksums for both. |
+| File | Size | What it is |
+| --- | --- | --- |
+| `RickshawRush-debug.apk` | ~951 KB | Signed with the auto-generated **debug** key. Install directly: `adb install RickshawRush-debug.apk`. Package id gets a `.debug` suffix, so it can live next to the release build. |
+| `RickshawRush-release-UNSIGNED.apk` | ~710 KB | Release build, **unsigned** — sign it yourself (see below). |
+| `SHA256SUMS.txt` | | Checksums for both. |
+| `build.log` | | Full Gradle output, handy when a build fails. |
+
+The exact sizes and SHA-256 of each build are also published as **notice
+annotations** on the run, so you can confirm what was produced without
+downloading anything:
+
+```bash
+gh api repos/pushparaj9749/game/actions/runs/<run-id>/jobs   --jq '.jobs[0].id' | xargs -I{}   gh api repos/pushparaj9749/game/check-runs/{}/annotations   --jq '.[] | select(.annotation_level=="notice") | .message'
+```
 
 The workflow is [`​.github/workflows/build-apk.yml`](.github/workflows/build-apk.yml).
 It relies only on what the GitHub-hosted `ubuntu-latest` image already ships
@@ -157,13 +173,42 @@ perfectly and supports Android 13 themed icons via the `-v33` variant). Because
 ## Development notes
 
 - **No JDK in the dev sandbox.** `tools/verify_sources.py` exists for exactly that
-  reason: it cross-checks every `Art.*` / `sound.*` call against its definition by
-  argument count, resolves every `@type/name` and `R.type.name` reference, parses
-  all XML, and counts braces — catching the mistakes a compiler would, before
-  spending a CI run on them. Run it before pushing:
+  reason: it catches the mistakes a compiler would, before spending a CI run on
+  them. Run it before pushing:
 
   ```bash
   python3 tools/verify_sources.py
+  ```
+
+  It currently checks: XML well-formedness, that every `@type/name` and
+  `R.type.name` reference resolves, that every `Art.*` / `sound.*` call matches a
+  definition by argument count, that the required `SurfaceView` / `Activity` hooks
+  exist, brace and paren balance, numeric literals that overflow `int`, qualified
+  names used as `switch` case labels, and accidental weaker-access overrides of
+  public `android.view.View` methods.
+
+  Every one of checks 6–8 was added *because* CI caught that bug for real. They
+  are the three Java rules that are easiest to get wrong in a Canvas-heavy
+  codebase and impossible to test without a compiler:
+
+  | Bug | javac says | Rule |
+  | --- | --- | --- |
+  | `int c = 0xFF14331F;` | `integer number too large` | above `0x7FFFFFFF` needs an `L` |
+  | `int c = 0xFF14331FL;` | `possible lossy conversion from long to int` | …and *also* an `(int)` cast — JLS narrows int constants, never long ones |
+  | `case GameView.OBST_CAR:` | `constant expression required` | JLS 14.11/15.29: a case label may not be a qualified name |
+  | `private void draw(Canvas)` | `attempting to assign weaker access privileges` | `View.draw(Canvas)` is already public |
+
+- **Reading CI failures.** Raw Actions logs and artifact zips are served from
+  hosts other than `api.github.com`
+  (`productionresultssa*.blob.core.windows.net`,
+  `results-receiver.actions.githubusercontent.com`), which restricted networks
+  often block. The workflow therefore reports failures through the API instead: a
+  commit comment plus an `::error` annotation carrying the *What went wrong*
+  block. Read them with:
+
+  ```bash
+  gh api repos/pushparaj9749/game/commits/<sha>/comments --jq '.[].body'
+  gh api repos/pushparaj9749/game/check-runs/<job-id>/annotations
   ```
 
 - **Frame pacing.** The loop clamps `dt` to `Config.MAX_DELTA` (50 ms) so an
