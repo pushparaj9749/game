@@ -13,9 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  # `write` is only needed so the failure-debug step can push the build log to
-  # the orphan ci-logs branch. Nothing is ever pushed to a source branch.
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -130,57 +128,65 @@ jobs:
       # ---------------------------------------------------------------
       # Failure debugging aid.
       #
-      # Raw Actions logs are served from a different host than api.github.com
-      # (productionresultssa*.blob.core.windows.net), which is awkward to reach
-      # from restricted environments. This step mirrors build.log onto an
-      # orphan `ci-logs` branch so it can be read back with plain
-      # `gh api repos/OWNER/REPO/contents/build.log?ref=ci-logs`.
-      #
-      # Only runs on failure. Safe to delete once the build is stable.
+      # Raw Actions logs are served from a different host than api.github.com,
+      # which is unreachable from restricted environments. So on failure this
+      # posts the digest two ways that ARE reachable through the API:
+      #   1. a commit comment   -> GET /repos/OWNER/REPO/commits/SHA/comments
+      #   2. an error annotation -> GET /repos/OWNER/REPO/check-runs/JOB/annotations
+      # Both are best-effort: the step can never fail the job.
+      # Safe to delete once the build is stable.
       # ---------------------------------------------------------------
-      - name: Publish build log on failure
+      - name: Report failure via API
         if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          set -euo pipefail
-          mkdir -p .cilogs
-          cp -f build.log .cilogs/ 2>/dev/null || echo "(no build.log)" > .cilogs/build.log
+          set +e
+          [ -f build.log ] || { echo "no build.log produced"; exit 0; }
 
+          BODY_FILE=$(mktemp)
           {
-            echo "# Build failure digest"
+            echo "### :x: Build failure digest"
             echo ""
             echo "- run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
             echo "- commit: \`${GITHUB_SHA}\`"
-            echo "- branch: \`${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}\`"
             echo ""
-            echo "## What went wrong"
+            echo "#### What went wrong"
             echo '```'
-            awk '/^FAILURE: Build (failed|completed with an exception)/{f=1} f' build.log 2>/dev/null | head -200
-            echo '```'
-            echo ""
-            echo "## Errors"
-            echo '```'
-            grep -nE "error:|ERROR:|Caused by:|^e: " build.log 2>/dev/null | head -120 || echo "(none)"
+            awk '/^FAILURE: Build (failed|completed with an exception)/{f=1} f' build.log | head -60
             echo '```'
             echo ""
-            echo "## Failed tasks"
+            echo "#### Errors"
             echo '```'
-            grep -E "^> Task .* FAILED" build.log 2>/dev/null | head -40 || echo "(none)"
+            grep -nE "error:|ERROR:|^e: |Caused by: " build.log | head -60
             echo '```'
             echo ""
-            echo "## Gradle version block"
+            echo "#### Failed tasks"
             echo '```'
-            sed -n '1,40p' build.log
+            grep -E "^> Task .* FAILED" build.log | head -30
             echo '```'
-          } > .cilogs/FAIL.md
+            echo ""
+            echo "<details><summary>last 120 log lines</summary>"
+            echo ""
+            echo '```'
+            tail -120 build.log
+            echo '```'
+            echo "</details>"
+          } > "$BODY_FILE"
 
-          git config user.name  "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # 1) commit comment
+          gh api "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" \
+            -X POST -F body=@"$BODY_FILE" --jq '.html_url' \
+            || echo "::warning::could not post commit comment"
 
-          git checkout --orphan ci-logs
-          git reset -q
-          git add -f .cilogs
-          git commit -q -m "ci-logs: ${GITHUB_SHA::7} run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
-          git push -f origin ci-logs:ci-logs
+          # 2) an ::error annotation, readable via
+          #    GET /repos/OWNER/REPO/check-runs/JOB_ID/annotations
+          MSG=$(awk '/^FAILURE: Build (failed|completed with an exception)/{f=1} f' build.log \
+                  | head -45 | cut -c1-300)
+          [ -n "$MSG" ] || MSG=$(grep -nE "error:|FAILED" build.log | head -45 | cut -c1-300)
+          [ -n "$MSG" ] || MSG="build failed; see the build.log artifact"
+          echo "::error title=Gradle failure::$(printf '%s' "$MSG" | head -c 1500 | tr '\n' ' ')"
+          exit 0
 
       - name: Upload APKs + build log
         if: always()
