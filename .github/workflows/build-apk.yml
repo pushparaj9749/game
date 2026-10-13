@@ -7,19 +7,13 @@ on:
   pull_request:
   workflow_dispatch:
 
-# Cancel superseded runs on the same ref so you don't queue up stale builds.
+# Cancel superseded runs on the same ref so stale builds don't queue up.
 concurrency:
   group: apk-${{ github.ref }}
   cancel-in-progress: true
 
 permissions:
   contents: read
-
-env:
-  # Everything the Android build needs is preinstalled on the GitHub-hosted
-  # ubuntu-latest image: JDK 17 (default), Gradle, SDK platforms 34-37,
-  # build-tools 34/35/36/37, platform-tools and NDK.
-  JAVA_VERSION: '17'
 
 jobs:
   build:
@@ -29,85 +23,116 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5
         with:
           distribution: temurin
-          java-version: ${{ env.JAVA_VERSION }}
+          java-version: '17'
 
+      # The ubuntu-latest image already ships the Android SDK (platforms 34-37,
+      # build-tools 34-37, platform-tools, NDK) and Gradle, so there is nothing
+      # to install and no sdkmanager licences to accept.
       - name: Cache Gradle
         uses: actions/cache@v4
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-jdk${{ env.JAVA_VERSION }}-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle', 'gradle.properties') }}
+          key: gradle-${{ runner.os }}-j17-${{ hashFiles('gradle/wrapper/gradle-wrapper.properties', '**/*.gradle', 'gradle.properties') }}
           restore-keys: |
-            gradle-${{ runner.os }}-jdk${{ env.JAVA_VERSION }}-
+            gradle-${{ runner.os }}-j17-
 
-      - name: Show toolchain
+      - name: Toolchain
         run: |
-          java -version
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          ls "$ANDROID_HOME/platforms" || true
-          ls "$ANDROID_HOME/build-tools" || true
+          java -version 2>&1
+          echo "ANDROID_HOME=${ANDROID_HOME:-unset}"
+          echo "platforms:  $(ls "$ANDROID_HOME/platforms" 2>/dev/null | tr '\n' ' ')"
+          echo "build-tools: $(ls "$ANDROID_HOME/build-tools" 2>/dev/null | tr '\n' ' ')"
           chmod +x ./gradlew
+          ./gradlew --version 2>&1 | sed -n '1,12p' || true
 
-      # ---------------------------------------------------------------
-      # Optional: sign the release build in CI.
-      # Skipped unless you add the KEYSTORE_* secrets, in which case the
-      # signed app-release.apk is produced instead of the unsigned one.
-      # ---------------------------------------------------------------
+      # KEYSTORE_* secrets are optional. Without them the release build stays
+      # unsigned and you sign it yourself; with them CI signs it for you.
       - name: Build APKs
+        id: build
+        run: |
+          set -o pipefail
+          ./gradlew --no-daemon --stacktrace assembleDebug assembleRelease 2>&1 | tee build.log
+
+      - name: Collect APKs
+        if: success()
         run: |
           set -euo pipefail
-          ./gradlew --no-daemon --stacktrace assembleDebug assembleRelease
-
           mkdir -p out
           cp app/build/outputs/apk/debug/*.apk "out/RickshawRush-debug.apk"
-
           if ls app/build/outputs/apk/release/*-unsigned.apk >/dev/null 2>&1; then
             cp app/build/outputs/apk/release/*-unsigned.apk "out/RickshawRush-release-UNSIGNED.apk"
           else
             cp app/build/outputs/apk/release/*.apk "out/RickshawRush-release.apk"
           fi
-
           ( cd out && sha256sum *.apk > SHA256SUMS.txt )
-
-          # Version info is read from gradle.properties (single source of truth).
           echo "version_name=$(grep '^VERSION_NAME=' gradle.properties | cut -d= -f2 | tr -d '\r')" >> "$GITHUB_ENV"
           echo "version_code=$(grep '^VERSION_CODE=' gradle.properties | cut -d= -f2 | tr -d '\r')" >> "$GITHUB_ENV"
-
           ls -la out
           cat out/SHA256SUMS.txt
 
-      - name: APK size report
+      # Always runs: this is the only failure detail reachable without the
+      # (separately hosted) raw log endpoint, so it goes into the job summary.
+      - name: Report
+        if: always()
         run: |
           {
-            echo "### APK build :package:"
+            if [ ! -f build.log ]; then
+              echo "### :x: Build never produced a log"
+              exit 0
+            fi
+            if grep -qE "^BUILD SUCCESSFUL" build.log; then
+              echo "### :white_check_mark: Build successful"
+            else
+              echo "### :x: Build FAILED"
+            fi
             echo ""
             echo "| File | Size |"
             echo "| --- | --- |"
             for f in out/*.apk; do
+              [ -e "$f" ] || continue
               printf '| `%s` | %s |\n' "$(basename "$f")" "$(du -h "$f" | cut -f1)"
             done
+            [ -n "${version_name:-}" ] && echo "" && echo "versionName \`${version_name}\` / versionCode \`${version_code}\`"
             echo ""
-            echo "- versionName: \`${{ env.version_name }}\`"
-            echo "- versionCode: \`${{ env.version_code }}\`"
+            echo "#### Compile errors"
+            echo '```'
+            grep -nE "error:|ERROR:|e: " build.log | head -80 || echo "(none matched)"
+            echo '```'
+            echo ""
+            echo "#### What went wrong"
+            echo '```'
+            awk '/^FAILURE: Build (failed|completed with an exception)/{f=1} f' build.log | head -120
+            echo '```'
+            echo ""
+            echo "#### Failed tasks"
+            echo '```'
+            grep -E "^> Task .* FAILED" build.log | head -30 || echo "(none)"
+            echo '```'
+            echo ""
+            echo "<details><summary>last 250 log lines</summary>"
             echo ""
             echo '```'
-            cat out/SHA256SUMS.txt
+            tail -250 build.log
             echo '```'
+            echo "</details>"
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - name: Upload APKs
+      - name: Upload APKs + build log
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: RickshawRush-v${{ env.version_name }}-${{ github.sha }}
+          name: RickshawRush-v${{ env.version_name || 'failed' }}-${{ github.sha }}
           path: |
             out/*.apk
             out/SHA256SUMS.txt
-          if-no-files-found: error
+            build.log
+          if-no-files-found: warn
           retention-days: 30
