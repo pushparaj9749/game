@@ -821,7 +821,7 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
         if (c == null) return;
         try {
-            draw(c);
+            drawFrame(c);
         } catch (Throwable t) {
             Log.e(TAG, "draw failed", t);
         } finally {
@@ -833,7 +833,12 @@ final class GameView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
-    private void draw(Canvas c) {
+    /**
+     * Paints one frame. Named drawFrame rather than draw because
+     * View.draw(Canvas) is public - a private method of that name would be an
+     * override with weaker access privileges, which javac rejects.
+     */
+    private void drawFrame(Canvas c) {
         float dw = Config.DESIGN_W;
         float dh = Config.DESIGN_H;
 

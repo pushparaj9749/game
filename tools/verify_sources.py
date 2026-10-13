@@ -12,7 +12,8 @@ verify the things a compiler would catch first:
   6. numeric literals that overflow int - both javac errors: missing L suffix
      and missing (int) cast on a long literal
   7. qualified names used as switch case labels (JLS 14.11)
-  8. obviously unused imports
+  8. accidental weaker-access overrides of public android.view.View methods
+  9. obviously unused imports
 
 Usage:  python3 tools/verify_sources.py
 Exit code 0 = all good.
@@ -312,7 +313,35 @@ def main():
                          "static final field"
                          % (os.path.basename(f), line, m.group(1).replace(" ", "")))
 
-    # 8. unused imports
+    # 8. Accidental overrides of android.view.View methods.
+    #    View.draw(Canvas) is public, so declaring `private void draw(Canvas)`
+    #    in a View/SurfaceView subclass fails with "attempting to assign weaker
+    #    access privileges". Only the names that are public on View matter here.
+    VIEW_PUBLIC_METHODS = {
+        "draw", "dispatchDraw", "onDraw", "layout", "measure", "invalidate",
+        "refreshDrawableState", "requestLayout", "setAccessibilityDelegate",
+        "onTouchEvent", "onKeyDown", "onKeyUp", "onFocusChanged",
+        "onWindowFocusChanged", "computeScroll", "getAccessibilityClassName",
+        "drawableStateChanged", "onAttachedToWindow", "onDetachedFromWindow",
+        "onVisibilityChanged", "performClick", "setLayerType", "toString",
+    }
+    for f in java_files:
+        text = open(f, encoding="utf-8").read()
+        if not re.search(r"extends\s+(?:\w+\.)*(?:View|SurfaceView|TextureView)\b", text):
+            continue
+        for m in re.finditer(
+                r"^[ \t]*(private|protected|)[ \t]+(?:static[ \t]+|final[ \t]+)*"
+                r"(?:void|boolean|int|long|float|double|[A-Z][\w.]*)[ \t]+(\w+)[ \t]*\(",
+                text, re.M):
+            name = m.group(2)
+            if name in VIEW_PUBLIC_METHODS and m.group(1) != "public":
+                line = text[: m.start()].count("\n") + 1
+                fails.append("%s:%d `%s` is public on android.view.View - declaring it "
+                             "%s here is an override with weaker access privileges; "
+                             "rename it (e.g. drawFrame)"
+                             % (os.path.basename(f), line, name, m.group(1) or "package-private"))
+
+    # 9. unused imports
     for f in java_files:
         s = open(f, encoding="utf-8").read()
         body = re.sub(r"^import .*$", "", s, flags=re.M)
