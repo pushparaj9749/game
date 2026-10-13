@@ -143,13 +143,22 @@ final class Art {
         return a + (b - a) * t;
     }
 
-    /** Deterministic pseudo-random in 0..1 from an integer seed. */
+    /**
+     * Deterministic pseudo-random in 0..1 from an integer seed.
+     *
+     * Used for stable scenery/building/window variation so the roadside looks
+     * the same on every frame without storing any state.
+     *
+     * The mixing constants exceed Integer.MAX_VALUE, so the multiply happens in
+     * long and narrows back to int afterwards - a plain int literal here is a
+     * compile error ("integer number too large").
+     */
     static float hash01(int seed) {
-        int x = seed * 1103515245 + 12345;
+        long x = (seed * 1103515245L + 12345L) & 0xFFFFFFFFL;
         x ^= (x >>> 15);
-        x *= 2246822519;
+        x = (x * 2246822519L) & 0xFFFFFFFFL;
         x ^= (x >>> 13);
-        return ((x & 0x7fffffff) % 10000) / 10000f;
+        return ((int) (x & 0x7FFFFFFFL)) % 10000 / 10000f;
     }
 
     // -----------------------------------------------------------------------
