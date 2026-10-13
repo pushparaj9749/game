@@ -305,13 +305,16 @@ final class SoundEngine {
             }
             float secs = (float) age / SAMPLE_RATE;
 
+            // Every local is initialised at declaration. javac cannot prove
+            // definite assignment through this switch, because the `default`
+            // branch retires the voice with `continue` instead of assigning.
             float seg = 0f;
             float segT = 0f;
             float segDur = 0f;
-            float totalDur;
-            float freq;
-            float vol;
-            int wave;   // 0 sine, 1 square, 2 saw, 3 noise
+            float totalDur = 0f;
+            float freq = 0f;
+            float vol = 0f;
+            int wave = 0;   // 0 sine, 1 square, 2 saw, 3 noise
 
             switch (type) {
                 case SND_COIN: {
