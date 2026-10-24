@@ -1,0 +1,14 @@
+{
+  "name": "fire-zone",
+  "version": "1.0.0",
+  "description": "FIRE ZONE — a Free Fire inspired top-down battle royale that runs in the browser. 30 players, shrinking safe zone, loot, Booyah!",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "test": "node test/autoplay.mjs"
+  },
+  "keywords": ["battle-royale", "game", "canvas", "javascript"],
+  "license": "MIT",
+  "engines": { "node": ">=18" }
+}

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>FIRE ZONE — Battle Royale</title>
+<link rel="stylesheet" href="styles.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Ccircle cx='32' cy='32' r='30' fill='%230d1410'/%3E%3Cpath d='M32 10c8 10 14 15 14 24a14 14 0 1 1-28 0c0-6 3-10 6-14 1 5 3 8 6 9-1-8 0-14 2-19z' fill='%23ffb03a'/%3E%3C/svg%3E" />
+<meta name="theme-color" content="#0d1410" />
+</head>
+<body>
+  <canvas id="game"></canvas>
+
+  <!-- ================= HUD ================= -->
+  <div id="hud" class="hidden">
+    <div class="hud-topleft">
+      <div class="minimap-wrap">
+        <canvas id="minimap" width="200" height="200"></canvas>
+        <div class="minimap-ring"></div>
+        <div class="minimap-label" id="districtName">BERMUDA</div>
+      </div>
+      <div class="zone-chip">
+        <span class="zone-dot"></span>
+        <span id="zoneLabel">ZONE CLOSES IN</span>
+        <b id="zoneTimer">0:55</b>
+      </div>
+    </div>
+
+    <div class="hud-topcenter">
+      <div class="stat-pill">
+        <span class="ico">👥</span><b id="aliveCount">30</b><span class="lbl">ALIVE</span>
+      </div>
+      <div class="stat-pill kill">
+        <span class="ico">☠</span><b id="killCount">0</b><span class="lbl">KILLS</span>
+      </div>
+    </div>
+
+    <div class="killfeed" id="killfeed"></div>
+
+    <div class="hud-bottomleft">
+      <div class="pname" id="playerName">PLAYER</div>
+      <div class="bar shield">
+        <div class="bar-fill" id="shieldFill"></div>
+        <span class="bar-num" id="shieldNum">0</span>
+        <span class="bar-tag">SHIELD</span>
+      </div>
+      <div class="bar health">
+        <div class="bar-fill" id="healthFill"></div>
+        <span class="bar-num" id="healthNum">100</span>
+        <span class="bar-tag">HEALTH</span>
+      </div>
+    </div>
+
+    <div class="hud-bottomright">
+      <div class="med-chip"><span>✚</span><b id="medCount">1</b></div>
+      <div class="weapon-card" id="weaponCard">
+        <div class="wc-top"><span id="weaponLabel">PISTOL</span><span id="weaponName">M500</span></div>
+        <div class="wc-ammo"><b id="magCount">7</b><span>/</span><i id="reserveCount">60</i></div>
+        <div class="wc-slots" id="weaponSlots"></div>
+      </div>
+    </div>
+
+    <div class="loot-prompt hidden" id="lootPrompt"><kbd>E</kbd><span id="lootPromptText"></span></div>
+    <div class="zone-warning hidden" id="zoneWarning">⚠ ZONE IS CLOSING — MOVE!</div>
+    <div class="hint hidden" id="hintBar">R reload · F heal · E swap weapon · 1/2 switch · Shift sprint</div>
+    <div class="toast" id="toast"></div>
+  </div>
+
+  <!-- ================= MENU ================= -->
+  <div id="menu" class="screen">
+    <div class="menu-bg"></div>
+    <div class="menu-inner">
+      <div class="logo">
+        <div class="logo-sub">SURVIVE · LOOT · BOOYAH</div>
+        <h1>FIRE<span>ZONE</span></h1>
+        <div class="logo-line">30 PLAYERS · ONE WINNER</div>
+      </div>
+
+      <div class="menu-row">
+        <label class="name-field">
+          <span>YOUR NAME</span>
+          <input id="nameInput" maxlength="14" value="PLAYER" spellcheck="false" />
+        </label>
+        <button id="playBtn" class="play-btn">
+          <span class="pb-main">PLAY</span>
+          <span class="pb-sub">Drop into Bermuda</span>
+        </button>
+      </div>
+
+      <div class="controls">
+        <div class="ctrl"><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><span>Move</span></div>
+        <div class="ctrl"><kbd>Mouse</kbd><span>Aim</span></div>
+        <div class="ctrl"><kbd>Click</kbd><span>Shoot</span></div>
+        <div class="ctrl"><kbd>R</kbd><span>Reload</span></div>
+        <div class="ctrl"><kbd>F</kbd><span>Medkit</span></div>
+        <div class="ctrl"><kbd>1</kbd><kbd>2</kbd><span>Weapons</span></div>
+        <div class="ctrl"><kbd>Shift</kbd><span>Sprint</span></div>
+        <div class="ctrl"><kbd>M</kbd><span>Mute</span></div>
+      </div>
+
+      <p class="menu-note">Walk over loot to pick it up automatically. Stay inside the safe zone — outside it you take damage.</p>
+    </div>
+  </div>
+
+  <!-- ================= END SCREEN ================= -->
+  <div id="endScreen" class="screen hidden">
+    <div class="end-bg"></div>
+    <div class="end-inner">
+      <div class="end-rank" id="endRank">#1</div>
+      <h2 id="endTitle">BOOYAH!</h2>
+      <p id="endSub">You are the last one standing.</p>
+      <div class="end-stats">
+        <div><b id="endKills">0</b><span>KILLS</span></div>
+        <div><b id="endDamage">0</b><span>DAMAGE</span></div>
+        <div><b id="endTime">0:00</b><span>SURVIVED</span></div>
+        <div><b id="endPlace">1/30</b><span>PLACE</span></div>
+      </div>
+      <button id="againBtn" class="play-btn small">
+        <span class="pb-main">PLAY AGAIN</span>
+        <span class="pb-sub">Jump back in</span>
+      </button>
+    </div>
+  </div>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
